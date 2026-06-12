@@ -161,12 +161,16 @@ void removeSignalOffset(uint8_t *samples, uint32_t size) {
 
 #ifndef ON_DEVICE
 
-    uint8_t tmp[offset_size];
-    memcpy(tmp, samples + SIGNAL_IGNORE_FIRST_SAMPLES, sizeof(tmp));
-    qsort(tmp, sizeof(tmp), sizeof(uint8_t), cmp_uint8);
+    uint8_t *tmp = calloc(offset_size, sizeof(uint8_t));
+    if (tmp == NULL)
+        return;
+    memcpy(tmp, samples + SIGNAL_IGNORE_FIRST_SAMPLES, offset_size);
+    qsort(tmp, offset_size, sizeof(uint8_t), cmp_uint8);
 
     uint8_t low10 = 0.5 * (tmp[(int)(offset_size * 0.05)] + tmp[(int)((offset_size - 1) * 0.05)]);
     uint8_t hi90 =  0.5 * (tmp[(int)(offset_size * 0.95)] + tmp[(int)((offset_size - 1) * 0.95)]);
+    free(tmp);
+
     int32_t cnt = 0;
     for (uint32_t i = SIGNAL_IGNORE_FIRST_SAMPLES; i < size; i++) {
 
